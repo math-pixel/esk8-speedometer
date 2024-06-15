@@ -90,10 +90,24 @@ void setup() {
 
 String vitesse = "Null";
 boolean needRefreshSpeed = true;
+boolean refreshDisconnection = true;
 void loop() {
 
+
+  if(isConnected_Ble()){
+    processBluetoothConnected();
+    refreshDisconnection = true;
+  }else{
+    processBluetoothNotConnected();
+  } 
+
+}
+
+
+void processBluetoothConnected(){
   // refresh screen
   if(needRefreshSpeed == true){
+    Serial.println("refresh");
     needRefreshSpeed = false;
 
     display.setTextSize(1.5);
@@ -105,32 +119,48 @@ void loop() {
     display.display();
     display.clearDisplay();
   }
-  
-
-
 
   chaine_caractere = ""; 
   // available() permet d'obtenir le nombre de caractères  disponibles pour la
   // lecture à partir d'un port série logiciel. Il s'agit de données déjà arrivées
   // et stockées dans le tampon de réception série.
   while (BT.available() != 0) {
-    Serial.println("toto");
-
+   
     //lecture du buffer
     reception_des_donnees = BT.read();
-    //
+
     // chaine_caractere = reception_des_donnees;
      chaine_caractere.concat(reception_des_donnees);
      delay(20);
   }
-   
+  
     if (chaine_caractere != "")
     {
       Serial.println(chaine_caractere);
       vitesse = chaine_caractere;
       needRefreshSpeed = true;
-    } 
+    }
+}
 
+
+void processBluetoothNotConnected(){
+  if(refreshDisconnection == true){
+    refreshDisconnection = false;
+    
+    display.setTextColor(WHITE);
+    display.setTextSize(2);
+    display.setCursor(0,0);
+    appendTextCenter("Bluetooth \n Disconnected");
+    display.display();
+    display.clearDisplay();
+  }
+}
+
+// TOOLS FUNCTION
+
+
+boolean isConnected_Ble(){
+  return digitalRead(PinStateBT);
 }
 
 
